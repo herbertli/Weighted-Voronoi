@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/Weighted-Voronoi/precache-manifest.f70478b45841b2f930943fd06a72bb99.js"
+  "/Weighted-Voronoi/precache-manifest.2783cc50f76c0c6a38c3916e90312341.js"
 );
 
 workbox.clientsClaim();
