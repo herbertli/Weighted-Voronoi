@@ -1,10 +1,10 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
-const styles = theme => ({
+const styles = (theme: Theme) => createStyles({
   button: {
     margin: theme.spacing.unit,
   },
@@ -13,11 +13,17 @@ const styles = theme => ({
   }
 });
 
-class RoundOver extends React.Component {
+interface Props extends WithStyles<typeof styles> {
+  handleClick: () => void,
+  roundNum: number,
+  numPlayers: number
+}
+
+class RoundOver extends React.Component<Props> {
 
   saveBoard = () => {
     const link = document.createElement('a');
-    const canvas = document.getElementById("physCanvas");
+    const canvas = document.getElementById("physCanvas") as HTMLCanvasElement;
     link.href = canvas.toDataURL();
     link.download = "board.png";
     link.click();

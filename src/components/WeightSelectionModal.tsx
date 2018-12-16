@@ -6,36 +6,49 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
+import { PlayerType } from '../types';
+import { number } from 'prop-types';
 
-class WeightModal extends React.Component {
-  constructor(props) {
+interface Props {
+  currentPlayer: PlayerType,
+  handleClose: (weight: number) => void,
+  handleCancel: () => void,
+  open: boolean,
+}
+
+interface State {
+  selectedWeight: string,
+  showErrorWeight: boolean,
+}
+
+class WeightModal extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = {
-      selectedWeight: null,
+      selectedWeight: '',
       showErrorWeight: false,
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (this.props.currentPlayer !== prevProps.currentPlayer) {
       this.setState({
-        selectedWeight: null,
+        selectedWeight: '',
         showErrorWeight: false,
       });
     }
   }
 
-  handleChange = name => event => {
-    const { showErrorWeight } = this.validateState(event.target.value);
+  handleChange = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { showErrorWeight } = this.validateState(event.currentTarget.value);
     this.setState({
+      ...this.state,
       showErrorWeight: showErrorWeight,
-      [name]: event.target.value,
+      [name]: event.currentTarget.value,
     });
   };
 
-  validateState = (selectedWeight) => {
-    if (!selectedWeight)
-      selectedWeight = this.state.selectedWeight;
+  validateState = (selectedWeight: string) => {
     const { weightRemaining } = this.props.currentPlayer;
     const nWeight = parseInt(selectedWeight);
     const showErrorWeight = isNaN(nWeight) || !Number.isInteger(nWeight) || nWeight > weightRemaining || nWeight <= 0;
@@ -45,15 +58,14 @@ class WeightModal extends React.Component {
   }
 
   handleSubmit = () => {
-    const { showErrorWeight } = this.validateState();
+    let { selectedWeight } = this.state;
+    const { showErrorWeight } = this.validateState(selectedWeight);
     if (showErrorWeight) {
       this.setState({
         showErrorWeight
       });
     } else {
-      let { selectedWeight } = this.state;
-      selectedWeight = parseInt(selectedWeight);
-      this.props.handleClose(selectedWeight)
+      this.props.handleClose(parseInt(selectedWeight));
     }
   }
 

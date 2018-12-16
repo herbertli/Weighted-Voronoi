@@ -1,6 +1,10 @@
 import React from 'react';
 
-const Placeholder = (props) => {
+interface Props {
+    text: string
+}
+
+const Placeholder = (props: Props) => {
     return <div>
         {props.text}
     </div>

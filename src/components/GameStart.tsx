@@ -4,9 +4,11 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, createStyles, WithStyles, Theme } from '@material-ui/core/styles';
+import { OptionsType, ResultsType } from '../types'
 
-const styles = theme => ({
+
+const styles = (theme: Theme) => createStyles({
   root: {
     ...theme.mixins.gutters(),
     paddingTop: theme.spacing.unit * 2,
@@ -15,15 +17,30 @@ const styles = theme => ({
   },
 });
 
-class GameStart extends React.Component {
+interface Props extends WithStyles<typeof styles> {
+  handleSubmit: (options: OptionsType) => void,
+}
 
-  constructor(props) {
+interface State {
+  numPlayers: string,
+  numStones: string,
+  gravPer: string,
+  minDist: string,
+  showErrorPlayers: boolean,
+  showErrorStones: boolean,
+  showErrorGrav: boolean,
+  showErrorDist: boolean,
+}
+
+class GameStart extends React.Component<Props, State> {
+
+  constructor(props: Props) {
     super(props);
     this.state = {
-      numPlayers: 2,
-      numStones: 5,
-      gravPer: 1000,
-      minDist: 60,
+      numPlayers: "2",
+      numStones: "5",
+      gravPer: "1000",
+      minDist: "60",
       showErrorPlayers: false,
       showErrorStones: false,
       showErrorGrav: false,
@@ -31,11 +48,12 @@ class GameStart extends React.Component {
     }
   }
 
-  handleChange = name => event => {
+  handleChange = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const isValid = this.validateState({
-      [name]: event.target.value
+      ...this.state,
+      [name]: event.currentTarget.value
     });
-    let propName = -1;
+    let propName = "";
     if (name === 'numPlayers') {
       propName = 'showErrorPlayers';
     } else if (name === 'numStones') {
@@ -46,8 +64,9 @@ class GameStart extends React.Component {
       propName = 'showErrorDist';
     }
     this.setState({
+      ...this.state,
       [name]: event.target.value,
-      [propName]: isValid[propName],
+      [propName.toString()]: isValid[propName.toString()],
     });
   }
 
@@ -58,11 +77,10 @@ class GameStart extends React.Component {
         showErrorPlayers, showErrorStones, showErrorGrav, showErrorDist
       });
     } else {
-      let { numPlayers, numStones, gravPer, minDist } = this.state;
-      numPlayers = parseInt(numPlayers);
-      numStones = parseInt(numStones);
-      gravPer = parseInt(gravPer);
-      minDist = parseInt(minDist);
+      const numPlayers = parseInt(this.state.numPlayers);
+      const numStones = parseInt(this.state.numStones);
+      const gravPer = parseInt(this.state.gravPer);
+      const minDist = parseInt(this.state.minDist);
       const newOptions = {
         numPlayers, numStones, gravPer, minDist
       }
@@ -70,15 +88,15 @@ class GameStart extends React.Component {
     }
   }
 
-  validateState = (state) => {
+  validateState = (state: State): ResultsType => {
     const { numPlayers, numStones, gravPer, minDist } = state;
     const nNum = parseInt(numPlayers);
     const nStone = parseInt(numStones);
     const nGrav = parseInt(gravPer);
     const nDist = parseInt(minDist);
-    const showErrorPlayers = isNaN(nNum) || !Number.isInteger(nNum) || nNum <= 1;
-    const showErrorStones = isNaN(nStone) || !Number.isInteger(nStone) || nStone < 1;
-    const showErrorGrav = isNaN(nGrav) || !Number.isInteger(nGrav) || nGrav <= 0;
+    const showErrorPlayers = isNaN(nNum) || nNum % 1 != 0 || nNum <= 1;
+    const showErrorStones = isNaN(nStone) || nStone % 1 != 0 || nStone < 1;
+    const showErrorGrav = isNaN(nGrav) || nGrav % 1 != 0 || nGrav <= 0;
     const showErrorDist = isNaN(nDist) || nDist < 0;
     return {
       showErrorPlayers, showErrorStones, showErrorGrav, showErrorDist

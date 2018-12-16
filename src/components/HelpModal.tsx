@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, Theme, createStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -7,11 +7,11 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Slide from '@material-ui/core/Slide';
 
-function Transition(props) {
+function Transition(props: any) {
   return <Slide direction="up" {...props} />;
 }
 
-const styles = theme => ({
+const styles = (theme: Theme) => createStyles({
   root: {
     ...theme.mixins.gutters(),
     marginTop: theme.spacing.unit,
@@ -28,10 +28,15 @@ const styles = theme => ({
   }
 });
 
-const Text = (props) => <Typography variant="body1" {...props}>{props.children}</Typography>
-const LText = (props) => <li><Text {...props}>{props.children}</Text></li>
+const Text = (props: any) => <Typography variant="body1" {...props}>{props.children}</Typography>
+const LText = (props: any) => <li><Text {...props}>{props.children}</Text></li>
 
-const HelpModal = (props) => {
+interface HelpProps extends WithStyles<typeof styles> {
+  open: boolean,
+  handleClose: () => void
+}
+
+const HelpModal = (props: HelpProps) => {
 
   const { classes } = props;
 
