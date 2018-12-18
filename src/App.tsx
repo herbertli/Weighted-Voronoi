@@ -16,39 +16,63 @@ import PlayerInfo from './components/PlayerInfo';
 import HelpModal from './components/HelpModal';
 import WeightSelectionModal from './components/WeightSelectionModal';
 import { checkValid, colors, calculateBoard } from './utils';
+import { PlayerType, PieceType, OptionsType } from './types';
 
-class App extends Component {
+interface AppProps {
 
-  initialState = {
-    stage: 'GAME_SETTINGS',
-    numPlayers: 2,
-    numStones: 5,
-    minDist: 60.0,
-    playersList: [],
-    gravPer: 1000,
-    isPlaying: false,
-    roundNum: 0,
-    showTotal: false,
-  }
+}
 
-  initialRound = {
-    piecesList: [],
-    displayHelpBox: false,
-    showWeightOverlay: false,
-    currentPlayer: 0,
-    newPiece: null,
-    snackOpen: false,
-  }
+interface AppState {
+  stage: string,
+  numPlayers: number,
+  numStones: number,
+  minDist: number,
+  playersList: Array<PlayerType>,
+  gravPer: number,
+  isPlaying: boolean,
+  roundNum: number,
+  showTotal: boolean,
+  piecesList: Array<PieceType>,
+  displayHelpBox: boolean,
+  showWeightOverlay: boolean,
+  currentPlayer: number,
+  newPiece: PieceType | null,
+  snackOpen: boolean,
+}
 
-  constructor() {
-    super();
+const initialState = {
+  stage: 'GAME_SETTINGS',
+  numPlayers: 2,
+  numStones: 5,
+  minDist: 60.0,
+  playersList: [],
+  gravPer: 1000,
+  isPlaying: false,
+  roundNum: 0,
+  showTotal: false,
+}
+
+const initialRound = {
+  piecesList: [],
+  displayHelpBox: false,
+  showWeightOverlay: false,
+  currentPlayer: 0,
+  newPiece: null,
+  snackOpen: false,
+}
+
+
+class App extends Component<AppProps, AppState> {
+
+  constructor(props: AppProps) {
+    super(props);
     this.state = {
-      ...this.initialRound,
-      ...this.initialState
+      ...initialRound,
+      ...initialState
     };
   }
 
-  createNewPlayer = (i, gravPer) => {
+  createNewPlayer = (i: number, gravPer: number) => {
     return {
       name: "Player " + (i + 1),
       color: colors[i],
@@ -58,7 +82,7 @@ class App extends Component {
     }
   }
 
-  createNewPiece = (x, y, weight, ind) => {
+  createNewPiece = (x: number, y: number, weight: number, ind: number) => {
     return {
       x,
       y,
@@ -67,19 +91,25 @@ class App extends Component {
     }
   }
 
-  handleSubmit = (newOptions) => {
+  handleSubmit = (newOptions: OptionsType | null) => {
     let newStage = this.state.stage;
     if (newStage === 'GAME_SETTINGS') {
       newStage = 'PLAYER_LIST';
       let newPlayers = [];
-      for (let i = 0; i < newOptions.numPlayers; i++) {
-        newPlayers.push(this.createNewPlayer(i, newOptions.gravPer));
+      if (newOptions === null) {
+        this.setState({
+          stage: newStage,
+        });
+      } else {
+        for (let i = 0; i < newOptions.numPlayers; i++) {
+          newPlayers.push(this.createNewPlayer(i, newOptions.gravPer));
+        }
+        this.setState({
+          ...newOptions,
+          playersList: newPlayers,
+          stage: newStage,
+        });
       }
-      this.setState({
-        ...newOptions,
-        playersList: newPlayers,
-        stage: newStage,
-      });
     } else if (newStage === 'PLAYER_LIST') {
       newStage = 'PLAYING_ROUND';
       this.setState({
@@ -90,19 +120,19 @@ class App extends Component {
     }
   }
 
-  handlePlayerChange = (ind) => (event) => {
+  handlePlayerChange = (ind: number) => (event: React.ChangeEvent) => {
     let newPlayers = [...this.state.playersList];
-    newPlayers[ind].name = event.target.value;
+    newPlayers[ind].name = event.currentTarget.nodeValue!;
     this.setState({
       playersList: newPlayers,
     });
   }
 
-  handleCanvasClick = (x, y) => {
+  handleCanvasClick = (x: number, y: number) => {
     this.handleBoardClick(x, y, this.state.currentPlayer);
   }
 
-  handleBoardClick = (x, y, playerInd) => {
+  handleBoardClick = (x: number, y: number, playerInd: number) => {
     const { piecesList, minDist } = this.state;
     const isValid = checkValid(x, y, piecesList, minDist);
     if (!isValid) {
@@ -112,12 +142,12 @@ class App extends Component {
     } else {
       this.setState({
         showWeightOverlay: true,
-        newPiece: { x, y, playerInd }
+        newPiece: { x, y, playerInd, weight: 1 }
       });
     }
   }
 
-  getValidPlayer = (currentPlayer, playersList) => {
+  getValidPlayer = (currentPlayer: number, playersList: Array<PlayerType>) => {
     const { numPlayers, numStones } = this.state;
     for (let i = 1; i <= numPlayers; i += 1) {
       const newPlayer = (currentPlayer + i) % numPlayers
@@ -128,8 +158,9 @@ class App extends Component {
     return -1;
   }
 
-  handleWeightSelection = (weight) => {
+  handleWeightSelection = (weight: number) => {
     const { piecesList, newPiece, currentPlayer, playersList } = this.state;
+    if (!newPiece) return;
     const { x, y, playerInd } = newPiece;
     let newPieces = [...piecesList];
     newPieces.push(this.createNewPiece(x, y, weight, playerInd));
@@ -170,33 +201,32 @@ class App extends Component {
 
   renderOverlay = () => {
     const { stage, playersList } = this.state;
-    switch (stage) {
-      case 'GAME_SETTINGS':
-        return <GameStart
-          handleSubmit={this.handleSubmit}
-        />
-      case 'PLAYER_LIST':
-      default:
-        return <PlayerInfo
-          playersList={playersList}
-          handleChange={this.handlePlayerChange}
-          handleSubmit={this.handleSubmit}
-        />
+    if (stage === 'GAME_SETTINGS') {
+      return <GameStart
+        handleSubmit={this.handleSubmit}
+      />;
+    } else if (stage === 'PLAYER_LIST') {
+      return <PlayerInfo
+        playersList={playersList}
+        handleChange={this.handlePlayerChange}
+        handleSubmit={this.handleSubmit}
+      />;
     }
   }
 
   resetGame = () => {
     this.setState({
-      ...this.initialState,
-      ...this.initialRound,
+      ...initialState,
+      ...initialRound,
     });
   }
 
-  resetRound = (scores) => {
+  resetRound = (scores: Array<number>) => {
     const { playersList, gravPer, numPlayers, roundNum } = this.state;
     let newPlayers = [...playersList];
     for (let i = 0; i < newPlayers.length; i += 1) {
       let player = newPlayers[i];
+      if (!player) continue;
       player.piecesPlaced = 0;
       player.weightRemaining = gravPer;
       player.scores.push(scores[i]);
@@ -212,7 +242,7 @@ class App extends Component {
       });
     } else {
       this.setState({
-        ...this.initialRound,
+        ...initialRound,
         stage: newStage,
         playersList: newPlayers,
         roundNum: roundNum + 1,
@@ -221,11 +251,10 @@ class App extends Component {
     }
   }
 
-  handleSnackClose = (event, reason) => {
+  handleSnackClose = (event: React.SyntheticEvent, reason: string) => {
     if (reason === 'clickaway') {
       return;
     }
-
     this.setState({ snackOpen: false });
   };
 
@@ -253,7 +282,7 @@ class App extends Component {
         <Board
           piecesList={piecesList}
           owners={owners}
-          handleCanvasClick={stage === 'PLAYING_ROUND' ? this.handleCanvasClick : null}
+          handleCanvasClick={stage === 'PLAYING_ROUND' ? this.handleCanvasClick : () => {}}
           newPiece={newPiece}
           currentPlayer={currentPlayer}
           minDist={minDist}
@@ -278,7 +307,7 @@ class App extends Component {
     </>);
   }
 
-  renderScene(stage) {
+  renderScene(stage: string) {
     if (stage === 'GAME_SETTINGS') {
       return (<Grid item xs={10} sm={6} md={4}>{this.renderOverlay()}</Grid>);
     } else if (stage === 'PLAYER_LIST') {
@@ -335,7 +364,6 @@ class App extends Component {
         >
           <CustomSnackbar
             onClose={() => this.handleClose()}
-            variant="error"
             message={`Stones must be at least ${minDist} units apart!`}
           />
         </Snackbar>

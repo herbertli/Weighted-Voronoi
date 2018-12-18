@@ -4,12 +4,19 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Typography from '@material-ui/core/Typography';
 import Slide from '@material-ui/core/Slide';
+import { PieceType } from '../types';
 
-function Transition(props) {
+function Transition(props: any) {
   return <Slide direction="up" {...props} />;
 }
 
-const InfoModal = (props) => {
+interface Props {
+  piece: PieceType | null,
+  open: boolean,
+  handleClose: () => void
+}
+
+const InfoModal = (props: Props) => {
   const { piece, open } = props;
   return (
     <Dialog

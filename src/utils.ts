@@ -1,3 +1,5 @@
+import { PieceType } from "./types";
+
 const colors = ['red', 'blue', 'green', 'orange', 'yellow', 'purple', 'silver', 'olive', 'teal'];
 
 const colorRGB = [
@@ -12,7 +14,7 @@ const colorRGB = [
     [0, 128, 128],
 ];
 
-const checkValid = (nx, ny, piecesList, minDist) => {
+const checkValid = (nx: number, ny: number, piecesList: Array<PieceType>, minDist: number) => {
     for (let piece of piecesList) {
         const { x, y } = piece;
         const dist = Math.pow(nx - x, 2) + Math.pow(ny - y, 2);
@@ -21,9 +23,9 @@ const checkValid = (nx, ny, piecesList, minDist) => {
     return true;
 }
 
-const calculateBoard = (width, height, piecesList, numPlayers) => {
-    let owners = [];
-    let scores = [];
+const calculateBoard = (width: number, height: number, piecesList: Array<PieceType>, numPlayers: number) => {
+    let owners: Array<Array<number>> = [];
+    let scores: Array<number> = [];
     for (let i = 0; i < numPlayers; i++) scores.push(0);
     for (let x = 0; x < width; x += 1) {
         owners.push([]);

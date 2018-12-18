@@ -1,9 +1,10 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
 import { checkValid, colors, colorRGB } from './../utils';
 import InfoModal from './InfoModal';
+import { PieceType } from '../types';
 
-const styles = () => ({
+const styles = () => createStyles({
   parentDiv: {
     position: 'relative',
     width: '500px',
@@ -24,12 +25,28 @@ const styles = () => ({
   }
 });
 
-class Board extends React.Component {
+interface BoardProps extends WithStyles<typeof styles> {
+  piecesList: Array<PieceType>,
+  owners: Array<Array<number>>,
+  newPiece: PieceType | null,
+  handleCanvasClick: (x: number, y: number) => void | null,
+  currentPlayer: number,
+  minDist: number
+}
 
-  constructor(props) {
+interface BoardState {
+  showInfo: boolean,
+  selectedPiece: PieceType | null
+}
+
+class Board extends React.Component<BoardProps, BoardState> {
+
+  canvas = React.createRef<HTMLCanvasElement>();
+  hoverCanvas = React.createRef<HTMLCanvasElement>();
+
+  constructor(props: BoardProps) {
     super(props);
-    this.canvas = React.createRef();
-    this.hoverCanvas = React.createRef();
+
     this.state = {
       showInfo: false,
       selectedPiece: null,
@@ -38,23 +55,25 @@ class Board extends React.Component {
 
   componentDidMount() {
     const { piecesList, owners, newPiece } = this.props;
-    const ctx = this.canvas.current.getContext('2d');
-    this.clearCanvas(ctx);
-    this.drawBoard(ctx, owners);
-    this.drawStones(ctx, piecesList, newPiece);
+      const ctx = this.canvas.current!.getContext('2d');
+      if (!ctx) return;
+      this.clearCanvas(ctx);
+      this.drawBoard(ctx, owners);
+      this.drawStones(ctx, piecesList, newPiece);
   }
 
   componentDidUpdate() {
     const { piecesList, owners, newPiece } = this.props;
-    const ctx = this.canvas.current.getContext('2d');
-    const htx = this.hoverCanvas.current.getContext('2d');
+    const ctx = this.canvas.current!.getContext('2d');
+    const htx = this.hoverCanvas.current!.getContext('2d');
+    if (!ctx || !htx) return;
     this.clearCanvas(ctx);
     this.clearCanvas(htx);
     this.drawBoard(ctx, owners);
     this.drawStones(ctx, piecesList, newPiece);
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: BoardProps, nextState: BoardState) {
     if (nextState.showInfo !== this.state.showInfo) {
       return true;
     }
@@ -65,14 +84,14 @@ class Board extends React.Component {
     }
   }
 
-  clearCanvas(ctx) {
+  clearCanvas(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, 500, 500);
   }
 
-  drawStones(ctx, piecesList, newPiece) {
+  drawStones(ctx: CanvasRenderingContext2D, piecesList: Array<PieceType>, newPiece: PieceType | null) {
     const radius = 5;
     for (let b = 0; b < piecesList.length; b += 1) {
-      const { x, y, playerInd } = piecesList[b];
+      const { x, y, playerInd } = piecesList[b]!;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
       ctx.fillStyle = colors[playerInd];
@@ -93,7 +112,7 @@ class Board extends React.Component {
     }
   }
 
-  drawBoard(ctx, owners) {
+  drawBoard(ctx: CanvasRenderingContext2D, owners: Array<Array<number>>) {
     const imageData = ctx.getImageData(0, 0, 500, 500);
     const { data } = imageData;
     for (let y = 0; y < 500; y += 1) {
@@ -112,14 +131,16 @@ class Board extends React.Component {
     ctx.putImageData(imageData, 0, 0);
   }
 
-  handleClick = (event) => {
+  handleClick = (event: React.MouseEvent) => {
     const { piecesList } = this.props;
-    var rect = this.canvas.current.getBoundingClientRect();
+    if (!this.canvas) return;
+    var rect = this.canvas.current!.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
     let hoveringPiece = null;
     for (let piece of piecesList) {
+      if (!piece) continue;
       const nx = piece.x;
       const ny = piece.y;
       const dist = Math.pow(nx - x, 2) + Math.pow(ny - y, 2);
@@ -138,14 +159,15 @@ class Board extends React.Component {
     }
   }
 
-  handleHover = (event) => {
+  handleHover = (event: React.MouseEvent) => {
     if (!this.props.handleCanvasClick) return false;
     const { currentPlayer, piecesList, minDist } = this.props;
-
-    const ctx = this.hoverCanvas.current.getContext('2d');
+    if(!this.hoverCanvas) return;
+    const ctx = this.hoverCanvas.current!.getContext('2d');
+    if (!ctx) return;
     this.clearCanvas(ctx);
 
-    var rect = this.hoverCanvas.current.getBoundingClientRect();
+    var rect = this.hoverCanvas.current!.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const isValid = checkValid(x, y, piecesList, minDist);

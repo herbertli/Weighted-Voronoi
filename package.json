@@ -6,12 +6,16 @@
   "dependencies": {
     "@material-ui/core": "^3.5.1",
     "@material-ui/icons": "^3.0.1",
+    "@types/node": "^10.12.15",
+    "@types/react-dom": "^16.0.11",
     "gh-pages": "^2.0.1",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
-    "react-scripts": "2.1.1"
+    "react-scripts": "2.1.1",
+    "typescript": "^3.2.2"
   },
   "scripts": {
+    "buildcourse": "react-scripts build && rsync -av build/ weighted_voronoi/ && rm -rf build/ && mv weighted_voronoi/index.html weighted_voronoi/iframe.html",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",

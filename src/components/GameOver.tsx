@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, Theme, createStyles, WithStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
@@ -8,8 +8,9 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import { PlayerType } from '../types';
 
-const styles = theme => ({
+const styles = (theme: Theme) => createStyles({
   button: {
     margin: theme.spacing.unit,
   },
@@ -18,17 +19,25 @@ const styles = theme => ({
   }
 });
 
-const GameOver = (props) => {
+interface Props extends WithStyles<typeof styles> {
+  playersList: Array<PlayerType>,
+  handleClick: () => void,
+  lastScores: Array<number>,
+}
+
+const GameOver = (props: Props) => {
   const { playersList, handleClick, classes } = props;
-  const add = (a, b) => a + b
+  const add = (a: number, b: number) => a + b
   let total = 0;
   for (let player of playersList) {
+    if (!player) continue;
     total += player.scores.reduce(add);
   }
 
-  let winners = [];
+  let winners: Array<string> = [];
   let winnerScore = -1;
   const rows = playersList.map((player, i) => {
+    if (!player) return null;
     const playerTotal = player.scores.reduce(add);
     if (playerTotal >= winnerScore) {
       if (playerTotal === winnerScore) {
@@ -65,6 +74,7 @@ const GameOver = (props) => {
       </TableHead>
       <TableBody>
         {rows.map(row => {
+          if (!row) return null;
           return (
             <TableRow key={row.id}>
               <TableCell component="th" scope="row">

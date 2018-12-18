@@ -6,16 +6,27 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Button from '@material-ui/core/Button';
 import TableFooter from '@material-ui/core/TableFooter';
+import { PlayerType } from '../types';
 
-const Scoreboard = (props) => {
+interface Props {
+  scores: Array<number>,
+  playersList: Array<PlayerType>,
+  numStones: number,
+  showTotal: boolean,
+  handleClick: () => void,
+  currentPlayer: number,
+}
+
+const Scoreboard = (props: Props) => {
   const { scores, playersList, numStones, showTotal, handleClick } = props;
   let tableRows;
   let headerRow;
   if (showTotal) {
     let total = 0;
-    let totals = [];
+    let totals: Array<number> = [];
     for (let player of playersList) {
       let playerTotal = 0;
+      if (!player) continue;
       for (let score of player.scores) {
         playerTotal += score;
       }
@@ -23,6 +34,7 @@ const Scoreboard = (props) => {
       total += playerTotal;
     }
     const percentages = playersList.map(player => {
+      if (!player) return null;
       if (total === 0) {
         return 0;
       } else {
@@ -35,6 +47,7 @@ const Scoreboard = (props) => {
     });
 
     const rows = playersList.map((player, i) => {
+      if (!player) return null;
       return {
         name: player.name,
         color: player.color,
@@ -45,6 +58,7 @@ const Scoreboard = (props) => {
     });
 
     tableRows = rows.map(row => {
+      if (!row) return null;
       return (
         <TableRow key={row.id} selected={row.id === props.currentPlayer}>
           <TableCell component="th" scope="row">
@@ -73,6 +87,7 @@ const Scoreboard = (props) => {
     });
 
     const rows = playersList.map((player, i) => {
+      if (!player) return null;
       return {
         name: player.name,
         color: player.color,
@@ -84,6 +99,7 @@ const Scoreboard = (props) => {
       };
     });
     tableRows = rows.map(row => {
+      if (!row) return null;
       return (
         <TableRow key={row.id} selected={row.id === props.currentPlayer}>
           <TableCell component="th" scope="row">
